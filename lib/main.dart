@@ -1,125 +1,115 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:library_flutter/core/navigation/navigation.dart';
+import 'package:library_flutter/core/theme/theme.dart';
+import 'package:library_flutter/features/auth/data/user_repository.dart';
+import 'package:library_flutter/features/auth/domain/user_bloc/user_bloc.dart';
+import 'package:library_flutter/features/main/data/repositories/book_repository.dart';
+import 'package:library_flutter/features/main/data/repositories/reservation_repository.dart';
+import 'package:library_flutter/features/main/domain/book_bloc/book_bloc.dart';
+import 'package:library_flutter/features/main/domain/reservation_bloc/reservation_bloc.dart';
+import 'package:library_flutter/features/main/data/repositories/feedback_repository.dart';
+import 'package:library_flutter/features/main/domain/feedback_bloc/feedback_bloc.dart';
+import 'package:library_flutter/features/profile/data/repositories/offer_repository.dart';
+import 'package:library_flutter/features/profile/data/repositories/profile_repository.dart';
+import 'package:library_flutter/features/profile/domain/offer_bloc/offer_bloc.dart';
+import 'package:library_flutter/features/profile/domain/profile_bloc/profile_bloc.dart';
+import 'package:library_flutter/features/search/domain/search_bloc/search_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:talker_bloc_logger/talker_bloc_logger_observer.dart';
+import 'package:talker_dio_logger/talker_dio_logger_interceptor.dart';
+import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+import 'package:toastification/toastification.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final talker = TalkerFlutter.init();
+  GetIt.I.registerSingleton(talker);
+
+  FlutterError.onError =
+      (details) => GetIt.I<Talker>().handle(details.exception, details.stack);
+
+  final preferences = await SharedPreferences.getInstance();
+  GetIt.I.registerSingleton(preferences);
+
+  final options = BaseOptions(
+    baseUrl: 'http://192.168.20.84/api',
+  );
+  final dio = Dio(options);
+  dio.interceptors.add(
+    TalkerDioLogger(
+      settings: const TalkerDioLoggerSettings(
+        printRequestHeaders: true,
+        printResponseHeaders: true,
+        printResponseMessage: true,
+      ),
+    ),
+  );
+  GetIt.I.registerSingleton(dio);
+
+  Bloc.observer = TalkerBlocObserver(
+    talker: talker,
+  );
+
+  runApp(const LibraryApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class LibraryApp extends StatefulWidget {
+  const LibraryApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  State<LibraryApp> createState() => _LibraryAppState();
+}
+
+class _LibraryAppState extends State<LibraryApp> {
+  final _appRouter = AppRouter();
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
+    final userRepository = UserRepository(
+        dio: GetIt.I<Dio>(), preferences: GetIt.I<SharedPreferences>());
+    final bookRepository = BookRepository(dio: GetIt.I<Dio>());
+    final resevationRepository = ReservationRepository(dio: GetIt.I<Dio>());
+    final feedbackRepository = FeedbackRepository(dio: GetIt.I<Dio>());
+    final profileRepository = ProfileRepository(dio: GetIt.I<Dio>());
+    final offerRepository = OfferRepository(dio: GetIt.I<Dio>());
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => UserBloc(userRepository: userRepository),
+        ),
+        BlocProvider(
+          create: (context) => BookBloc(bookRepository: bookRepository),
+        ),
+        BlocProvider(
+          create: (context) => SearchBloc(bookRepository: bookRepository),
+        ),
+        BlocProvider(
+          create: (context) => ReservationBloc(reservationRepository: resevationRepository),
+        ),
+        BlocProvider(
+          create: (context) => FeedbackBloc(feedbackRepository: feedbackRepository),
+        ),
+        BlocProvider(
+          create: (context) => ProfileBloc(profileRepository: profileRepository),
+        ),
+        BlocProvider(
+          create: (context) => OfferBloc(offerRepository: offerRepository),
+        ),
+      ],
+      child: ToastificationWrapper(
+        child: MaterialApp.router(
+          title: 'Library',
+          debugShowCheckedModeBanner: false,
+          theme: themeData,
+          routerConfig: _appRouter.config(),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
