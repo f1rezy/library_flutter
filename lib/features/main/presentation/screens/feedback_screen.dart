@@ -35,6 +35,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             fontFamily: 'Roboto',
           ),
         ),
+        centerTitle: true,
       ),
       body: Stack(
         children: [

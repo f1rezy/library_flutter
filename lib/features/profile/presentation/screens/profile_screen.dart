@@ -36,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             fontFamily: 'Roboto',
           ),
         ),
+        centerTitle: true,
       ),
       body: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {

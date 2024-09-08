@@ -28,6 +28,7 @@ class ReservationsScreen extends StatelessWidget {
             fontFamily: 'Roboto',
           ),
         ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Container(

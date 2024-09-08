@@ -62,6 +62,7 @@ class _BookScreenState extends State<BookScreen> {
               fontFamily: 'Roboto',
             ),
           ),
+          centerTitle: true,
         ),
         body: Stack(
           children: [
