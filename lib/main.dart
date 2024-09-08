@@ -7,8 +7,10 @@ import 'package:library_flutter/core/theme/theme.dart';
 import 'package:library_flutter/features/auth/data/user_repository.dart';
 import 'package:library_flutter/features/auth/domain/user_bloc/user_bloc.dart';
 import 'package:library_flutter/features/main/data/repositories/book_repository.dart';
+import 'package:library_flutter/features/main/data/repositories/category_repository.dart';
 import 'package:library_flutter/features/main/data/repositories/reservation_repository.dart';
 import 'package:library_flutter/features/main/domain/book_bloc/book_bloc.dart';
+import 'package:library_flutter/features/main/domain/category_bloc/category_bloc.dart';
 import 'package:library_flutter/features/main/domain/reservation_bloc/reservation_bloc.dart';
 import 'package:library_flutter/features/main/data/repositories/feedback_repository.dart';
 import 'package:library_flutter/features/main/domain/feedback_bloc/feedback_bloc.dart';
@@ -37,7 +39,7 @@ Future<void> main() async {
   GetIt.I.registerSingleton(preferences);
 
   final options = BaseOptions(
-    baseUrl: 'http://192.168.20.84/api',
+    baseUrl: 'http://192.168.50.84/api',
   );
   final dio = Dio(options);
   dio.interceptors.add(
@@ -77,6 +79,7 @@ class _LibraryAppState extends State<LibraryApp> {
     final feedbackRepository = FeedbackRepository(dio: GetIt.I<Dio>());
     final profileRepository = ProfileRepository(dio: GetIt.I<Dio>());
     final offerRepository = OfferRepository(dio: GetIt.I<Dio>());
+    final categoryRepository = CategoryRepository(dio: GetIt.I<Dio>());
 
     return MultiBlocProvider(
       providers: [
@@ -100,6 +103,9 @@ class _LibraryAppState extends State<LibraryApp> {
         ),
         BlocProvider(
           create: (context) => OfferBloc(offerRepository: offerRepository),
+        ),
+        BlocProvider(
+          create: (context) => CategoryBloc(categoryRepository: categoryRepository),
         ),
       ],
       child: ToastificationWrapper(

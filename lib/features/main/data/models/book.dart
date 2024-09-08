@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
+import 'package:library_flutter/features/main/data/models/category.dart';
 import 'package:library_flutter/features/main/data/models/feedback.dart';
 import 'package:library_flutter/features/main/data/models/reservation.dart';
 
@@ -10,6 +11,7 @@ class Book extends Equatable {
       required this.title,
       required this.description,
       required this.author,
+      required this.category,
       required this.image,
       required this.feedbacks,
       required this.reservations});
@@ -18,6 +20,7 @@ class Book extends Equatable {
   final String title;
   final String description;
   final String author;
+  final Category category;
   final String image;
   final List<Feedback> feedbacks;
   final List<Reservation> reservations;
@@ -32,6 +35,7 @@ class Book extends Equatable {
       'title': title,
       'description': description,
       'author': author,
+      'category': category,
       'image': image,
       'feedbacks': feedbacks,
       'reservations': reservations,
@@ -44,6 +48,7 @@ class Book extends Equatable {
       title: map['title'] as String,
       description: map['description'] as String,
       author: map['author'] as String,
+      category: Category.fromMap(map['category']),
       image: map['image']['image'] as String,
       feedbacks: List<Feedback>.from(
           map['feedbacks'].map((value) => Feedback.fromMap(value)).toList()),

@@ -98,6 +98,14 @@ class _BookScreenState extends State<BookScreen> {
                         ),
                       ),
                       Text(
+                        widget.book.category.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          fontFamily: 'Roboto',
+                        ),
+                      ),
+                      Text(
                         widget.book.author,
                         style: const TextStyle(
                           fontSize: 14,
